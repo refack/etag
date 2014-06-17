@@ -39,6 +39,7 @@ function etag() {
     // hash
     if (body instanceof Stream) {
       if (!body.path) return;
+      if (!(yield exists(body.path))) return;
       var s = yield stat(body.path);
       etag = crc(s.size + '.' + s.mtime);
     } else if ('string' == type || Buffer.isBuffer(body)) {
@@ -59,5 +60,17 @@ function etag() {
 function stat(file) {
   return function(done){
     fs.stat(file, done);
+  }
+}
+
+/**
+ * Exists thunk.
+ */
+
+function exists(file) {
+  return function(done){
+    fs.exists(file, function(exists){
+      done(null, exists);
+    });
   }
 }
